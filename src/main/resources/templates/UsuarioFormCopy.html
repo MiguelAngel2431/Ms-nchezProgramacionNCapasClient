@@ -1,0 +1,711 @@
+<html xmlns:th="http://www.thymeleaf.org">
+    <head>
+        <title>Registrar usuario</title>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+        <!-- Bootstrap -->
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-LN+7fdVzj6u52u30Kp6M/trliBMCMKTyK833zpbD+pXdCLuTusPj697FH4R/5mcr" crossorigin="anonymous">
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/js/bootstrap.bundle.min.js" integrity="sha384-ndDqU0Gzau9qJ1lfW4pNLlhNTkCfHzAVBReH9diLvGRem5+R9g2FzA8ZGN954O5Q" crossorigin="anonymous"></script>
+
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.min.css">
+
+        <script src="https://code.jquery.com/jquery-3.7.1.js" integrity="sha256-eKhayi8LEQwp4NKxN+CfCh+3qOVUtJn3QNZ0TciWLP4=" crossorigin="anonymous"></script>
+
+        <style>
+            .form {
+                background-color: #DBDBDB;
+                margin-top: 30px;
+                padding: 20px;
+                //border: 3px dotted black;
+                box-shadow: 10px 5px 5px #828282;
+            }
+
+            .section {
+                border: 3px dotted black;
+                border-radius: 20px;
+                padding: 20px;
+            }
+
+            .correct {
+                border-color: green;
+            }
+
+            .error {
+                border-color: red;
+            }
+
+            .msg-error {
+                color: red;
+            }
+
+            .error-msg {
+                color: red;
+            }
+
+            .error-msg-lenght {
+                color: red;
+            }
+        </style>
+    </head>
+    <body>
+        <div class="container">
+            <form class="form" method="post" th:object="${Usuario}" th:action="@{/usuario/add}">
+                <div class="section">
+                    <div class="row">
+                        <center><h1>Formulario de registro</h1></center>
+                        <h4>Datos de identificacion</h4>
+
+                        <!-- Nombre -->
+                        <div class="col-md-12 col-12">
+                            <input type="text" class="form-control text" id="inputNombre" placeholder="Nombre(s)" aria-label="First name" th:field="*{Nombre}" /*onkeydown="SoloLetras(event, this)"*/>
+                                   <!--<span class="error-msg"></span>
+                                   <span class="correct-msg"></span>-->
+                                   <span class="text-danger"
+                                   th:if="${#fields.hasErrors('Nombre')}"
+                                   th:errors="*{Nombre}">
+                                Message error
+                            </span>
+
+                        </div>
+                    </div>
+                    <br>
+                    <div class="row">
+
+
+                        <!-- Apellido paterno -->
+                        <div class="col-md-4 col-12">
+                            <input type="text" class="form-control text" id="inputApellidoPaterno" placeholder="Apellido paterno" aria-label="Last name" th:field="*{ApellidoPaterno}" onkeydown="SoloLetras(event, this)">
+                            <span class="error-msg"></span>
+                            <!--<span class="text-danger"
+                                  th:if="${#fields.hasErrors('ApellidoPaterno')}"
+                                  th:errors="*{ApellidoPaterno}">
+                                Message error
+                            </span>-->
+                        </div>
+
+                        <!-- Apellido materno -->
+                        <div class="col-md-4 col-12">
+                            <input type="text" class="form-control text" id="inputApellidoMaterno" placeholder="Apellido materno" aria-label="Last name" th:field="*{ApellidoMaterno}" onkeydown="SoloLetras(event, this)">
+                            <span class="error-msg"></span>
+                            <!--<span class="text-danger"
+                                  th:if="${#fields.hasErrors('ApellidoMaterno')}"
+                                  th:errors="*{ApellidoMaterno}">
+                                Message error
+                            </span>-->
+                        </div>
+
+                        <!-- Fecha de nacimiento -->
+                        <div class="col-md-4 col-4">
+                            <input type="date" class="form-control" id="inputFechaNacimiento" placeholder="yyyy-mm-dd" aria-label="Last name" th:field="*{FechaNacimiento}" >
+                            <span class="error-msg"></span>
+                        </div>
+                    </div>
+                    <br>
+
+                    <div class="row">
+
+                        <!-- Username -->
+                        <div class="col-md-3 col-sm-3 col-12">
+                            <label class="visually-hidden" for="autoSizingInputGroup">Username</label>
+                            <div class="input-group">
+                                <div class="input-group-text">@</div>
+                                <input type="text" class="form-control" id="inputUserName" placeholder="Username" th:field="*{UserName}" onkeyup="validarUserName(event, this)">
+                                <span class="error-msg"></span>
+                                <!--<span class="text-danger"
+                                      th:if="${#fields.hasErrors('UserName')}"
+                                      th:errors="*{UserName}">
+                                    Message error
+                                </span>-->
+                            </div>
+                        </div>
+
+                        <!-- CURP-->
+                        <div class="col-md-7 col-sm-7 col-12">
+                            <input type="text" class="form-control" id="inputCurp" placeholder="Ingresa CURP" aria-label="First name" th:field="*{Curp}" onkeydown="SoloLetrasNumeros(event, this)">
+                            <center><div id="emailHelp" class="form-text">CURP</div></center>
+                            <!--<span class="error-msg"></span>-->
+                            <span class="text-danger"
+                                  th:if="${#fields.hasErrors('Curp')}"
+                                  th:errors="*{Curp}">
+                                Message error
+                            </span>
+                        </div>
+
+                        <!-- Rol-->
+                        <div class="col-md-2 col-sm-2 col-12">
+                            <!--<input type="number" class="form-control" placeholder="Id Rol" aria-label="First name" th:field="*{Rol.IdRol}">
+                            <center><div id="emailHelp" class="form-text">Rol</div></center>-->
+
+                            <div class="form-group">
+                                <select class="form-control" id="sel1">
+                                    <option value="0" selected>Selecciona Rol</option>
+                                    <option th:each="rol : ${roles}" th:text="${rol.Nombre}" th:value="${rol.IdRol}">One</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="section">
+                    </div>
+
+                    <br>
+                    <br>
+
+                    <div class="row">
+                        <h4>Correo electronico</h4>
+
+                        <!-- Correo -->
+                        <div class="col-md">
+                            <label for="inputEmail4" class="form-label">Email</label>
+                            <input type="email" class="form-control" id="inputEmail" placeholder="Ingresa correo" th:field="*{Email}" onkeyup="ValidarEmail(event, this)">
+                            <!--<span class="error-msg"></span>-->
+                            <span class="text-danger"
+                                  th:if="${#fields.hasErrors('Email')}"
+                                  th:errors="*{Email}">
+                                Message error
+                            </span>
+                        </div>
+
+                    </div>
+
+                    <div class="row">
+
+                        <!-- Contraseña -->
+                        <div class="col-md-6">
+                            <label for="inputPassword" class="form-label">Contraseña</label>
+                            <input type="password" class="form-control" id="inputPassword" placeholder="Ingresa contraseña" th:field="*{Password}" onkeyup="SecurePassword(event, this)">
+                            <span class="error-msg-lenght msg-error"></span>
+                            <span class="error-msg msg-error"></span>
+                            <span class="error-msg-mayuscula msg-error"></span>
+                            <span class="error-msg-minuscula msg-error"></span>
+                            <span class="error-msg-numero msg-error"></span>
+                            <span class="error-msg-password msg-error"></span>
+
+                        </div>
+
+                        <!-- Confirmacion de contraseña -->
+                        <div class="col-md-6">
+                            <label for="inputPassword4" class="form-label">Confirma contraseña</label>
+                            <input type="password" class="form-control" id="inputConfirmPassword" placeholder="Confirma tu contraseña" onblur="VerificarPasswords(event, this)">
+                            <span class="error-msg"></span>
+                        </div>
+
+                    </div>
+                </div>
+
+                <br>
+                <br>
+                <div class="section">
+                    <div class="row">
+                        <h4>Datos de contacto</h4>
+
+                        <!-- Telefono fijo -->
+                        <div class="row mb-3">
+                            <label for="inputEmail3" class="col-sm-2 col-form-label">Teléfono</label>
+                            <div class="col-sm-10">
+                                <input type="number" class="form-control" id="inputTelefono" placeholder="Ingresa teléfono fijo" th:field="*{Telefono}" onkeydown="ValidarTelefono(event, this)" >
+                                <!--<span class="error-msg"></span>
+                                <span class="error-msg-lenght msg-error"></span>-->
+                                <span class="text-danger"
+                                      th:if="${#fields.hasErrors('Telefono')}"
+                                      th:errors="*{Telefono}">
+                                    Message error
+                                </span>
+                            </div>
+                        </div>
+
+                        <!-- Celular -->
+                        <div class="row mb-3">
+                            <label for="inputPassword3" class="col-sm-2 col-form-label">Celular</label>
+                            <div class="col-sm-10">
+                                <input type="number" class="form-control" id="inputCelular" placeholder="Ingresa teléfono celular" th:field="*{Celular}" onkeydown="ValidarCelular(event, this)">
+                                <!--<span class="error-msg"></span>
+                                <span class="error-msg-lenght msg-error"></span>-->
+                                <span class="text-danger"
+                                      th:if="${#fields.hasErrors('Celular')}"
+                                      th:errors="*{Celular}">
+                                    Message error
+                                </span>
+                            </div>
+                        </div>
+
+                        <!-- Sexo -->
+                        <div class="row mb-3">
+                            <label for="inputPassword3" class="col-sm-2 col-form-label">Sexo</label>
+                            <div class="col-sm-10">
+                                <!--<input type="text" class="form-control" id="inputPassword3" placeholder="Ingresa sexo (M/F)" th:field="*{Sexo}">-->
+
+                                <div class="form-check">
+                                    <input class="form-check-input" type="radio" name="flexRadioDefault" id="flexRadioDefault1" value="M" th:field="*{Sexo}">
+                                    <label class="form-check-label" for="flexRadioDefault1">
+                                        Masculino
+                                    </label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="radio" name="flexRadioDefault" id="flexRadioDefault2" value="F" th:field="*{Sexo}">
+                                    <label class="form-check-label" for="flexRadioDefault2">
+                                        Femenino
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <br>
+                    <br>
+                    <div class="section">
+                        <div class="row">
+                            <h4>Datos de residencia</h4>
+
+                            <!-- Calle -->
+                            <div class="col-md-8 col-sm-8 col-12">
+                                <input type="text" class="form-control" id="inputCalle" placeholder="Ingresa calle" aria-label="First name" th:field="*{Direcciones[0].Calle}" onkeyup="ValidarCalle(event, this)">
+                                <center><div id="emailHelp" class="form-text">Calle</div></center>
+                                <!--<span class="error-msg"></span>-->
+                                <span class="text-danger"
+                                      th:if="${#fields.hasErrors('Direcciones[0].Calle')}"
+                                      th:errors="*{Direcciones[0].Calle}">
+                                    Message error
+                                </span>
+                            </div>
+
+                            <!-- Número interior -->
+                            <div class="col-md-2 col-sm-2 col-6">
+                                <input type="text" class="form-control" id="inputNumeroInterior" placeholder="# interior"  aria-label="Last name" th:field="*{Direcciones[0].NumeroInterior}" onkeydown="SoloNumeros(event, this)">
+                                <center><div id="emailHelp" class="form-text">Número interior</div></center>
+                                <span class="error-msg"></span>
+                                <!--<span class="text-danger"
+                                  th:if="${#fields.hasErrors('Direcciones[0].NumeroInterior')}"
+                                  th:errors="*{Direcciones[0].NumeroExterior">
+                                Message error
+                                 </span>-->
+
+                            </div>
+
+                            <!-- Número exterior -->
+                            <div class="col-md-2 col-sm-2 col-6">
+                                <input type="text" class="form-control" id="inputNumeroExterior" placeholder="# exterior"  aria-label="Last name" th:field="*{Direcciones[0].NumeroExterior}" onkeydown="SoloNumeros(event, this)">
+                                <center><div id="emailHelp" class="form-text">Número exterior</div></center>
+                                <span class="error-msg"></span>
+                            </div>
+
+                        </div>
+                    </div>
+
+                    <br>
+                    <div class="row">
+
+                        <!-- Id Pais -->
+                        <div class="row mb-3">
+                            <label for="inputPassword3" class="col-sm-2 col-form-label">Id Colonia</label>
+                            <div class="form-group">
+                                <select class="form-control" id="sel1">
+                                    <option value="0" selected>Selecciona pais</option>
+                                    <option th:each="pais : ${paises}" th:text="${pais.Nombre}" th:value="${pais.IdPais}">One</option>
+                                </select>
+                            </div>
+                            
+                            <!--IdColonia-->
+                            <!--<div class="col-sm-10">
+                                <input type="number" class="form-control" id="inputPassword3" placeholder="Ingresa id de colonia" th:field="*{Direcciones[0].Colonia.IdColonia}">
+                            </div>-->
+                        </div>
+
+                        <!--<div class="form-group">
+                            <label for="sel1">Colonia:</label>
+                            <select class="form-control" id="sel1">
+                                <option value="1">Montecillo</option>
+                                <option value="2">Santa Ursula</option>
+                                <option value="3">Buenavista</option>
+                                <option value="4">Lomas de San Pablo</option>
+                            </select>
+                        </div>-->
+
+                    </div>
+
+                    <button type="submit" class="btn btn-success mt-4 w-100 fw-fold">Agregar</button>
+            </form>
+        </div>
+    </div>
+
+
+    <script>
+
+        function SoloLetras(event, input) {
+        let key = event.key;
+        let ascii = event.keyCode;
+
+        let regex = new RegExp(/^[a-zA-ZáéíóúüñÁÉÍÓÚÜÑ\s]*$/);
+
+        if (regex.test(key)) {
+        if (ascii >= 65 && ascii <= 90) { //Solo letras
+        $(input).removeClass("error").addClass("correct");
+        $(input).siblings(".error-msg").text("");
+        }
+        } else {
+        $(input).removeClass("correct").addClass("error");
+        $(input).siblings(".error-msg").text("Solo se permiten letras");
+        event.preventDefault(); //No permitir numeros
+        }
+        }
+
+
+        function SoloLetrasNumeros(event, input) {
+        let key = event.key;
+        let ascii = event.keyCode;
+
+        let regex = new RegExp('^[a-zA-Z0-9\s]*$');
+
+        if (regex.test(key)) {
+        //if (ascii >= 65 && ascii <= 90) { //Solo letras
+        $(input).removeClass("error").addClass("correct");
+        $(input).siblings(".error-msg").text("");
+
+        //}
+        } else {
+        $(input).removeClass("correct").addClass("error");
+        $(input).siblings(".error-msg").text("Solo se permiten letras y numeros");
+        event.preventDefault();
+        }
+        }
+
+        function SoloNumeros(event, input) {
+        let key = event.key;
+        let ascii = event.keyCode;
+
+        let regex = new RegExp('^[0-9]*$');
+
+        if (regex.test(key) || ascii == 8) {
+
+        $(input).removeClass("error").addClass("correct");
+        $(input).siblings(".error-msg").text("");
+
+        } else {
+        $(input).removeClass("correct").addClass("error");
+        $(input).siblings(".error-msg").text("Solo se permiten numeros");
+        event.preventDefault();
+        }
+        }
+
+        //Validar que le usuario no pueda acceder a fechas futuras
+        inputFechaNacimiento.max = new Date().toISOString().split("T")[0];
+
+        function SecurePassword(event, input) {
+
+        //Validar minuscula
+        if ($("#inputPassword").val().match(/[A-z]/)) {
+        $(input).removeClass("error").addClass("correct");
+        $(input).siblings(".error-msg-minuscula").text("");
+
+        //Validar mayuscula
+        if ($("#inputPassword").val().match(/[A-Z]/)) {
+        $(input).removeClass("error").addClass("correct");
+        $(input).siblings(".error-msg-mayuscula").text("");
+
+        //Validar numero
+        if ($("#inputPassword").val().match(/\d/)) {
+        $(input).removeClass("error").addClass("correct");
+        $(input).siblings(".error-msg-numero").text("");
+
+        //Validar caracter especial
+        if ($("#inputPassword").val().match(/[@$!%*?&]/)) {
+        $(input).removeClass("error").addClass("correct");
+        $(input).siblings(".error-msg-password").text("");
+        if ($("#inputPassword").val().length > 8) {
+
+        // $(input).removeClass("error").addClass("correct");
+        $(input).siblings(".error-msg-lenght").text("");
+        } else {
+        $(input).removeClass("correct").addClass("error");
+        $(input).siblings(".error-msg-lenght").text("La contraseña debe ser mayor de 8 caracteres");
+        }
+        } else {
+        $(input).removeClass("correct").addClass("error");
+        $(input).siblings(".error-msg-password").text("Al menos un caracter especial ");
+        }
+        } else {
+        $(input).removeClass("correct").addClass("error");
+        $(input).siblings(".error-msg-numero").text("Un numero ");
+        }
+        } else {
+        $(input).removeClass("correct").addClass("error");
+        $(input).siblings(".error-msg-mayuscula").text("Una mayuscula ");
+        }
+        } else {
+        $(input).removeClass("correct").addClass("error");
+        $(input).siblings(".error-msg-minuscula").text("Una minuscula ");
+        }
+        }
+
+        function VerificarPasswords(event, input) {
+        password1 = $("#inputPassword").val();
+        password2 = $("#inputConfirmPassword").val();
+
+        if (password1 != password2) {
+        $(input).removeClass("correct").addClass("error");
+        $(input).siblings(".error-msg").text("Las contraseñas no coinciden");
+        } else {
+        $(input).removeClass("error").addClass("correct");
+        $(input).siblings(".error-msg").text("");
+        }
+        }
+
+        function ValidarTelefono(event, input) {
+        let key = event.key;
+        let ascii = event.keyCode;
+
+        let regex = new RegExp('^[0-9]*$');
+
+        if (regex.test(key) || ascii == 8) {
+
+        $(input).removeClass("error").addClass("correct");
+        $(input).siblings(".error-msg").text("");
+
+        if ($("#inputTelefono").val().length == 9 || ascii == 8) {
+        $(input).siblings(".error-msg-lenght").text("");
+        } else {
+        $(input).removeClass("correct").addClass("error");
+        $(input).siblings(".error-msg-lenght").text("Longitud del telefono debe ser del 10");
+        }
+        } else {
+        $(input).removeClass("correct").addClass("error");
+        $(input).siblings(".error-msg").text("Solo se permiten numeros");
+        event.preventDefault();
+        }
+        }
+
+        function ValidarCelular(event, input) {
+        let key = event.key;
+        let ascii = event.keyCode;
+
+        let regex = new RegExp('^[0-9]*$');
+
+        if (regex.test(key) || ascii == 8) {
+
+        $(input).removeClass("error").addClass("correct");
+        $(input).siblings(".error-msg").text("");
+
+        if ($("#inputCelular").val().length == 9 || ascii == 8) {
+        $(input).siblings(".error-msg-lenght").text("");
+        } else {
+        $(input).removeClass("correct").addClass("error");
+        $(input).siblings(".error-msg-lenght").text("Longitud del telefono debe ser del 10");
+        }
+        } else {
+        $(input).removeClass("correct").addClass("error");
+        $(input).siblings(".error-msg").text("Solo se permiten numeros");
+        event.preventDefault();
+        }
+        }
+
+        function validarUserName(event, input) {
+        let key = event.key;
+        let regex = new RegExp(/^[^_|0-9|\s]+[a-zA-Z0-9]+$/);
+
+        if (regex.test($("#inputUserName").val())) {
+        $(input).removeClass("error").addClass("correct");
+        $(input).siblings(".error-msg").text("");
+        } else {
+        $(input).removeClass("correct").addClass("error");
+        $(input).siblings(".error-msg").text("No puedes empezar por un numero, ni por un guion bajo");
+        event.preventDefault();
+        }
+        }
+
+        function ValidarCalle(event, input) {
+        let key = event.key;
+        let regex = new RegExp(/^[^@$!%*?&]+$/);
+
+        if (regex.test($("#inputCalle").val())) {
+        $(input).removeClass("error").addClass("correct");
+        $(input).siblings(".error-msg").text("");
+        } else {
+        $(input).removeClass("correct").addClass("error");
+        $(input).siblings(".error-msg").text("No se permite caracteres especiales");
+        event.preventDefault();
+        }
+        }
+
+        function ValidarEmail(event, input) {
+        let key = event.key;
+        let regex = new RegExp(/^[a-zA-Z-0-9]+[^-|\s]+@[a-zA-Z]+\.[a-z]+/);
+
+        if (regex.test($("#inputEmail").val())) {
+        $(input).removeClass("error").addClass("correct");
+        $(input).siblings(".error-msg").text("");
+        } else {
+        $(input).removeClass("correct").addClass("error");
+        $(input).siblings(".error-msg").text("Ingresa un correo valido");
+        event.preventDefault();
+        }
+
+        }
+
+        //Funcion para evitar copiar y/o pegar en algun campo
+        $(document).ready(function () {
+        //Evitar copiar y pegar en el campo Nombre
+        $("#inputNombre").on('paste', function (e) {
+        e.preventDefault();
+        alert('Esta acción está prohibida');
+        })
+
+        $("#inputNombre").on('copy', function (e) {
+        e.preventDefault();
+        alert('Esta acción está prohibida');
+        })
+
+        //Evitar copiar y pegar en el campo Apellido Paterno
+        $("#inputApellidoPaterno").on('paste', function (e) {
+        e.preventDefault();
+        alert('Esta acción está prohibida');
+        })
+
+        $("#inputApellidoPaterno").on('copy', function (e) {
+        e.preventDefault();
+        alert('Esta acción está prohibida');
+        })
+
+        //Evitar copiar y pegar en el campo Apellido Materno
+        $("#inputApellidoMaterno").on('paste', function (e) {
+        e.preventDefault();
+        alert('Esta acción está prohibida');
+        })
+
+        $("#inputApellidoMaterno").on('copy', function (e) {
+        e.preventDefault();
+        alert('Esta acción está prohibida');
+        })
+
+        //Evitar copiar y pegar en el campo UserName
+        $("#inputUserName").on('paste', function (e) {
+        e.preventDefault();
+        alert('Esta acción está prohibida');
+        })
+
+        $("#inputUserName").on('copy', function (e) {
+        e.preventDefault();
+        alert('Esta acción está prohibida');
+        })
+
+        //Evitar copiar y pegar en el campo Curp
+        $("#inputCurp").on('paste', function (e) {
+        e.preventDefault();
+        alert('Esta acción está prohibida');
+        })
+
+        $("#inputCurp").on('copy', function (e) {
+        e.preventDefault();
+        alert('Esta acción está prohibida');
+        })
+
+        //Evitar copiar y pegar en el campo Apellido Materno
+        $("#inputApellidoMaterno").on('paste', function (e) {
+        e.preventDefault();
+        alert('Esta acción está prohibida');
+        })
+
+        $("#inputApellidoMaterno").on('copy', function (e) {
+        e.preventDefault();
+        alert('Esta acción está prohibida');
+        })
+
+        //Evitar copiar y pegar en el campo Email
+        $("#inputEmail").on('paste', function (e) {
+        e.preventDefault();
+        alert('Esta acción está prohibida');
+        })
+
+        $("#inputEmail").on('copy', function (e) {
+        e.preventDefault();
+        alert('Esta acción está prohibida');
+        })
+
+        //Evitar copiar y pegar en el campo Password
+        $("#inputPassword").on('paste', function (e) {
+        e.preventDefault();
+        alert('Esta acción está prohibida');
+        })
+
+        $("#inputPassword").on('copy', function (e) {
+        e.preventDefault();
+        alert('Esta acción está prohibida');
+        })
+
+        //Evitar copiar y pegar en el campo Confirm password
+        $("#inputConfirmPassword").on('paste', function (e) {
+        e.preventDefault();
+        alert('Esta acción está prohibida');
+        })
+
+        $("#inputConfirmPassword").on('copy', function (e) {
+        e.preventDefault();
+        alert('Esta acción está prohibida');
+        })
+
+        //Evitar copiar y pegar en el campo Telefono
+        $("#inputTelefono").on('paste', function (e) {
+        e.preventDefault();
+        alert('Esta acción está prohibida');
+        })
+
+        $("#inputTelefono").on('copy', function (e) {
+        e.preventDefault();
+        alert('Esta acción está prohibida');
+        })
+
+        //Evitar copiar y pegar en el campo Celular
+        $("#inputCelular").on('paste', function (e) {
+        e.preventDefault();
+        alert('Esta acción está prohibida');
+        })
+
+        $("#inputCelular").on('copy', function (e) {
+        e.preventDefault();
+        alert('Esta acción está prohibida');
+        })
+
+        //Evitar copiar y pegar en el campo Calle
+        $("#inputCalle").on('paste', function (e) {
+        e.preventDefault();
+        alert('Esta acción está prohibida');
+        })
+
+        $("#inputCalle").on('copy', function (e) {
+        e.preventDefault();
+        alert('Esta acción está prohibida');
+        })
+
+        //Evitar copiar y pegar en el campo Numero Interior
+        $("#inputNumeroInterior").on('paste', function (e) {
+        e.preventDefault();
+        alert('Esta acción está prohibida');
+        })
+
+        $("#inputNumeroInterior").on('copy', function (e) {
+        e.preventDefault();
+        alert('Esta acción está prohibida');
+        })
+
+        //Evitar copiar y pegar en el campo Numero Exterior
+        $("#inputNumeroExterior").on('paste', function (e) {
+        e.preventDefault();
+        alert('Esta acción está prohibida');
+        })
+
+        $("#inputNumeroExterior").on('copy', function (e) {
+        e.preventDefault();
+        alert('Esta acción está prohibida');
+        })
+        })
+
+
+
+
+
+
+
+    </script>
+
+
+
+</body>
+</html>
