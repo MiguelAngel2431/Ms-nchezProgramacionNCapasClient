@@ -150,9 +150,9 @@
                         </div>
                     </div>
                 </div>
-
-                <input type="hidden" th:field="*{IdUsuario}">
-                <input type="hidden" th:field="*{Direcciones[0].IdDireccion}">
+                <!-- Inputs de validacion -->
+                <input id="usuario" type="hidden" th:field="*{IdUsuario}">
+                <input id="direccion" type="hidden" th:field="*{Direcciones[0].IdDireccion}">
 
                 <!-- Datos usuario -->
                 <div th:if="*{(IdUsuario == 0 && Direcciones[0].IdDireccion == 0)
@@ -945,7 +945,7 @@
 
         </script>
 
-        <script>
+<!--        <script>
             document.getElementById('form').addEventListener('submit', function(event) {
               event.preventDefault(); // Siempre evitamos el envío por defecto
 
@@ -962,26 +962,8 @@
                   });
               }  
             });
-        </script>
-        
-<!--        <script>
-            document.getElementById('form').addEventListener('submit', function(event) {
-              event.preventDefault(); // Siempre evitamos el envío por defecto
-
-              // Llamamos a todas las funciones de validación
-              if (VerificarPasswords(this)) {
-                // Si todas las validaciones pasan, se envía el formulario
-                this.submit();
-              } else {
-              
-                Swal.fire({
-                    icon: "error",
-                    title: "Oops...",
-                    text: "Las contraseñas no coinciden pa",
-                  });
-              }  
-            });
         </script>-->
+ 
 
     </body>
 </html>
