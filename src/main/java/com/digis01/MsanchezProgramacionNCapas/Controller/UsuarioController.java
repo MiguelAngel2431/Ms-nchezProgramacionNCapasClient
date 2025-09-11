@@ -16,6 +16,8 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -51,6 +53,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 @Controller
 @RequestMapping("usuario")
@@ -693,19 +696,19 @@ public class UsuarioController {
 
     @PostMapping("cargamasiva")
     public String CargaMasiva(@RequestParam("archivo") MultipartFile file, Model model, HttpSession session) {
-        
+
         try {
-            
+
             //Crear headers para Multipart
-            HttpHeaders headers =  new HttpHeaders();
+            HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.MULTIPART_FORM_DATA);
-            
+
             //Creamos el cuerpo del archivo
             MultiValueMap<String, Object> body = new LinkedMultiValueMap<>();
             body.add("file", file.getResource());
-            
+
             HttpEntity<MultiValueMap<String, Object>> requestEntity = new HttpEntity<>(body, headers);
-            
+
             //Llamar al servicio REST
             RestTemplate restTemplate = new RestTemplate();
             ResponseEntity<Result> responseEntity = restTemplate.exchange(
@@ -714,21 +717,61 @@ public class UsuarioController {
                     requestEntity,
                     Result.class
             );
-            
+
             if (responseEntity.getStatusCode() == HttpStatusCode.valueOf(200)) {
 
-            Result result = responseEntity.getBody();
-            model.addAttribute("resultado", result);
+                Result result = responseEntity.getBody();
 
-            //model.addAttribute("Usuario", usuario);
-        }
-            
+                //Inicializamos la lista de errores para cuando sea null, no marque error
+                model.addAttribute("listaErrores", result.getListaErrores() != null ? result.getListaErrores() : new ArrayList<>());
+
+                if (result != null && result.correct) {
+                    model.addAttribute("archivoCorrecto", true);
+                    //session.setAttribute("rutaArchivo", result.object); // Guardas la ruta en el cliente
+                    // Aquí guardas la ruta para usarla en el siguiente GET
+
+                    String ruta = (String) result.object;
+                    session.setAttribute("ruta", ruta);  // <---- Guardar en sesión cliente
+
+                    //model.addAttribute("rutaArchivo", ruta);
+                } else {
+                    model.addAttribute("archivoCorrecto", false);
+                    model.addAttribute("listaErrores", result.listaErrores);
+                }
+
+                //model.addAttribute("resultado", result);
+                //model.addAttribute("Usuario", usuario);
+            }
+
         } catch (Exception ex) {
         }
-        
-        return "redirect:/usuario";
+
+        return "CargaMasiva";
     }
 
+    @GetMapping("cargamasiva/procesar")
+    public String ProcesarArchivo(HttpSession session, Model model) {
+
+        String ruta = (String) session.getAttribute("ruta");
+
+        RestTemplate restTemplate = new RestTemplate();
+
+        ResponseEntity<Result> responseEntity = restTemplate.exchange("http://localhost:8081/usuarioapi/cargamasiva/procesar?ruta=" + URLEncoder.encode(ruta, StandardCharsets.UTF_8),
+                HttpMethod.GET,
+                HttpEntity.EMPTY,
+                Result.class);
+
+        if (responseEntity.getStatusCode() == HttpStatusCode.valueOf(200)) {
+
+            Result result = responseEntity.getBody();
+
+        }
+
+        // Limpia la ruta después de usarla
+        session.removeAttribute("ruta");
+
+        return "redirect:/usuario";
+    }
 //    @PostMapping("cargamasiva")
 //    public String CargaMasiva(@RequestParam("archivo") MultipartFile file, Model model, HttpSession session) {
 //
