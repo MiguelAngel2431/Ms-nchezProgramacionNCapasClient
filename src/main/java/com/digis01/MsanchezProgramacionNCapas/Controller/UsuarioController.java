@@ -51,6 +51,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
@@ -730,8 +731,8 @@ public class UsuarioController {
                     //session.setAttribute("rutaArchivo", result.object); // Guardas la ruta en el cliente
                     // Aquí guardas la ruta para usarla en el siguiente GET
 
-                    String ruta = (String) result.object;
-                    session.setAttribute("ruta", ruta);  // <---- Guardar en sesión cliente
+                    String hash = (String) result.object;
+                    session.setAttribute("hash", hash);  // <---- Guardar en sesión cliente
 
                     //model.addAttribute("rutaArchivo", ruta);
                 } else {
@@ -744,6 +745,7 @@ public class UsuarioController {
             }
 
         } catch (Exception ex) {
+            System.out.println("Error");
         }
 
         return "CargaMasiva";
@@ -752,25 +754,52 @@ public class UsuarioController {
     @GetMapping("cargamasiva/procesar")
     public String ProcesarArchivo(HttpSession session, Model model) {
 
-        String ruta = (String) session.getAttribute("ruta");
+        try {
+            //String ruta = (String) session.getAttribute("ruta");
+            String hash = (String) session.getAttribute("hash");
 
-        RestTemplate restTemplate = new RestTemplate();
+            RestTemplate restTemplate = new RestTemplate();
 
-        ResponseEntity<Result> responseEntity = restTemplate.exchange("http://localhost:8081/usuarioapi/cargamasiva/procesar?ruta=" + URLEncoder.encode(ruta, StandardCharsets.UTF_8),
-                HttpMethod.GET,
-                HttpEntity.EMPTY,
-                Result.class);
+            ResponseEntity<Result> responseEntity = restTemplate.exchange("http://localhost:8081/usuarioapi/cargamasiva/procesar/" + hash,
+                    HttpMethod.GET,
+                    HttpEntity.EMPTY,
+                    Result.class);
 
-        if (responseEntity.getStatusCode() == HttpStatusCode.valueOf(200)) {
+            if (responseEntity.getStatusCode() == HttpStatusCode.valueOf(200)) {
 
-            Result result = responseEntity.getBody();
+                Result result = responseEntity.getBody();
 
-        }
+            }
 
-        // Limpia la ruta después de usarla
-        session.removeAttribute("ruta");
+            // Limpia la ruta después de usarla
+            session.removeAttribute("ruta");
 
-        return "redirect:/usuario";
+            return "redirect:/usuario";
+            
+        } catch (HttpClientErrorException.Conflict ex) {
+            
+            // Capturamos el 409 y extraemos el mensaje del JSON
+            String responseBody = ex.getResponseBodyAsString();
+
+            String mensajeError = "El archivo ya fue cargado anteriormente y no puede duplicarse.";
+
+            try {
+                // Parseamos el JSON sin librerías externas
+                int inicio = responseBody.indexOf("\"errorMessage\":\"") + 16;
+                int fin = responseBody.indexOf("\"", inicio);
+                if (inicio > 15 && fin > inicio) {
+                    mensajeError = responseBody.substring(inicio, fin);
+                }
+            } catch (Exception e) {
+                // Fall back: usar mensaje por defecto
+            }
+
+            model.addAttribute("errorCarga", mensajeError);
+            
+            return "CargaMasiva";
+        } 
+
+        //return "CargaMasiva";
     }
 //    @PostMapping("cargamasiva")
 //    public String CargaMasiva(@RequestParam("archivo") MultipartFile file, Model model, HttpSession session) {

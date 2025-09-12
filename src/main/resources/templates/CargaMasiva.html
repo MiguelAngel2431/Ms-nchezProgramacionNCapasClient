@@ -44,7 +44,7 @@
                 color: black;
                 border: solid 2px black;
             }
-            
+
             .botones-excel-txt .btn {
                 border-radius: 20px;
                 height: 50px;
@@ -53,9 +53,9 @@
                 font-style: normal;
                 font-weight: bold;
             }
-            
+
             .btn-upload-file, .btn-procesar {
-                
+
                 border-radius: 20px;
                 width: 150px;
                 height: 50px;
@@ -72,13 +72,13 @@
                 font-size: 20px;
 
             }
-            
+
             @media (max-width: 768px) {
                 .btn-show-form {
                     width: 300px;
                 }
             }
-            
+
             @media (max-width: 576px) {
                 .btn-show-form {
                     width: 250px;
@@ -142,6 +142,13 @@
                     </table>
 
                 </div>
+
+
+            </div>
+            
+            <br>
+            <div th:if="${errorCarga}" style="color: red; font-weight: bold;">
+                <p th:text="${errorCarga}"></p>
             </div>
 
 
@@ -150,42 +157,42 @@
 
         <script>
             function mostrarFormulario() {
-            document.getElementById("mostrarFormulario").style.display = "none";
-            document.getElementById("botones").style.display = "block";
+                document.getElementById("mostrarFormulario").style.display = "none";
+                document.getElementById("botones").style.display = "block";
             }
 
             let tipoArchivo = "";
 
             document.getElementById("btnExcel").addEventListener("click", function () {
-            tipoArchivo = "xlsx"; // Tipo de archivo que se espera
-            document.getElementById("formularioArchivo").style.display = "block";
-            document.getElementById("archivo").setAttribute("accept", ".xlsx"); // Solo archivos Excel
+                tipoArchivo = "xlsx"; // Tipo de archivo que se espera
+                document.getElementById("formularioArchivo").style.display = "block";
+                document.getElementById("archivo").setAttribute("accept", ".xlsx"); // Solo archivos Excel
 
-            // Cambiar el botón "Subir Archivo" a verde (btn-success)
-            document.getElementById("cargaMasiva").classList.remove("btn-primary");
-            document.getElementById("cargaMasiva").classList.add("btn-success");
+                // Cambiar el botón "Subir Archivo" a verde (btn-success)
+                document.getElementById("cargaMasiva").classList.remove("btn-primary");
+                document.getElementById("cargaMasiva").classList.add("btn-success");
             });
 
             document.getElementById("btnTxt").addEventListener("click", function () {
-            tipoArchivo = "txt"; // Tipo de archivo que se espera
-            document.getElementById("formularioArchivo").style.display = "block";
-            document.getElementById("archivo").setAttribute("accept", ".txt"); // Solo archivos TXT
+                tipoArchivo = "txt"; // Tipo de archivo que se espera
+                document.getElementById("formularioArchivo").style.display = "block";
+                document.getElementById("archivo").setAttribute("accept", ".txt"); // Solo archivos TXT
 
-            // Cambiar el botón "Subir Archivo" a azul (btn-primary)
-            document.getElementById("cargaMasiva").classList.remove("btn-success");
-            document.getElementById("cargaMasiva").classList.add("btn-primary");
+                // Cambiar el botón "Subir Archivo" a azul (btn-primary)
+                document.getElementById("cargaMasiva").classList.remove("btn-success");
+                document.getElementById("cargaMasiva").classList.add("btn-primary");
             });
 
             document.getElementById("archivo").addEventListener("change", function () {
-            if (this.files.length > 0) {
-            var fileName = this.files[0].name;
-            var fileExtension = fileName.split('.').pop().toLowerCase();
+                if (this.files.length > 0) {
+                    var fileName = this.files[0].name;
+                    var fileExtension = fileName.split('.').pop().toLowerCase();
 
-            if (fileExtension !== tipoArchivo) {
-            alert("Por favor, seleccione un archivo " + tipoArchivo.toUpperCase() + " válido.");
-            this.value = "";
-            }
-            }
+                    if (fileExtension !== tipoArchivo) {
+                        alert("Por favor, seleccione un archivo " + tipoArchivo.toUpperCase() + " válido.");
+                        this.value = "";
+                    }
+                }
             });
         </script>
 
