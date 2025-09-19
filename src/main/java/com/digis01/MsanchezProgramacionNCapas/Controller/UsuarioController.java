@@ -92,6 +92,42 @@ public class UsuarioController {
     }
 
     //Buscador
+    @PostMapping
+    public String Index(@ModelAttribute("usuarioBusqueda") Usuario usuarioBusqueda,
+            Model model) {
+        
+        String nombre = usuarioBusqueda.getNombre();
+        
+        
+        
+        RestTemplate restTemplate = new RestTemplate();
+        
+        ResponseEntity<Result<List<Usuario>>> responseEntity = restTemplate.exchange("http://localhost:8081/usuarioapi?" +  "nombre=" + URLEncoder.encode(nombre, StandardCharsets.UTF_8),
+                HttpMethod.GET,
+                HttpEntity.EMPTY,
+                new ParameterizedTypeReference<Result<List<Usuario>>>() {
+        });
+
+        if (responseEntity.getStatusCode() == HttpStatusCode.valueOf(200)) {
+            model.addAttribute("usuarioBusqueda", new Usuario());
+
+            Result result = responseEntity.getBody();
+
+            if (result.correct) {
+                model.addAttribute("usuarios", result.object);
+                //model.addAttribute("roles", rolJPADAOImplementation.GetAll().objects);
+            } else {
+                model.addAttribute("usuarios", null);
+            }
+
+        }
+
+        return "UsuarioIndex"; //Retornamos hacia la vista UsuarioIndex.html
+        
+        
+    }
+
+    //Buscador
 //    @PostMapping
 //    public String Index(@ModelAttribute("usuarioBusqueda") Usuario usuarioBusqueda,
 //            Model model) {
@@ -775,9 +811,9 @@ public class UsuarioController {
             session.removeAttribute("ruta");
 
             return "redirect:/usuario";
-            
+
         } catch (HttpClientErrorException.Conflict ex) {
-            
+
             // Capturamos el 409 y extraemos el mensaje del JSON
             String responseBody = ex.getResponseBodyAsString();
 
@@ -795,9 +831,9 @@ public class UsuarioController {
             }
 
             model.addAttribute("errorCarga", mensajeError);
-            
+
             return "CargaMasiva";
-        } 
+        }
 
         //return "CargaMasiva";
     }
