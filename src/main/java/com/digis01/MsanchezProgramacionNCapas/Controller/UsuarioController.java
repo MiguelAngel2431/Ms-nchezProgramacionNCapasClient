@@ -67,7 +67,7 @@ public class UsuarioController {
 
         RestTemplate restTemplate = new RestTemplate();
 
-        ResponseEntity<Result<List<Usuario>>> responseEntity = restTemplate.exchange("http://localhost:8081/usuarioapi",
+        ResponseEntity<Result<List<Usuario>>> responseEntity = restTemplate.exchange("http://localhost:8081/usuarioapijpa",
                 HttpMethod.GET,
                 HttpEntity.EMPTY,
                 new ParameterizedTypeReference<Result<List<Usuario>>>() {
@@ -196,7 +196,7 @@ public class UsuarioController {
             //Result result = usuarioDAOImplementation.GetDetail(idUsuario);
             RestTemplate restTemplate = new RestTemplate();
 
-            ResponseEntity<Result<Usuario>> responseEntity = restTemplate.exchange("http://localhost:8081/usuarioapi/details/" + idUsuario,
+            ResponseEntity<Result<Usuario>> responseEntity = restTemplate.exchange("http://localhost:8081/usuarioapijpa/details/" + idUsuario,
                     HttpMethod.GET,
                     HttpEntity.EMPTY,
                     new ParameterizedTypeReference<Result<Usuario>>() {
@@ -234,7 +234,7 @@ public class UsuarioController {
 
             RestTemplate restTemplate = new RestTemplate();
 
-            ResponseEntity<Result<Usuario>> responseEntity = restTemplate.exchange("http://localhost:8081/usuarioapi/details/" + IdUsuario,
+            ResponseEntity<Result<Usuario>> responseEntity = restTemplate.exchange("http://localhost:8081/usuarioapijpa/" + IdUsuario,
                     HttpMethod.GET,
                     HttpEntity.EMPTY,
                     new ParameterizedTypeReference<Result<Usuario>>() {
@@ -316,7 +316,7 @@ public class UsuarioController {
             RestTemplate restTemplate = new RestTemplate();
 
             //Direccion
-            ResponseEntity<Result<Direccion>> responseEntity = restTemplate.exchange("http://localhost:8081/direccionapi/" + IdDireccion,
+            ResponseEntity<Result<Direccion>> responseEntity = restTemplate.exchange("http://localhost:8081/direccionapijpa/" + IdDireccion,
                     HttpMethod.GET,
                     HttpEntity.EMPTY,
                     new ParameterizedTypeReference<Result<Direccion>>() {
@@ -435,7 +435,7 @@ public class UsuarioController {
 
             RestTemplate restTemplate = new RestTemplate();
 
-            ResponseEntity<Result> responseEntity = restTemplate.exchange("http://localhost:8081/usuarioapi",
+            ResponseEntity<Result> responseEntity = restTemplate.exchange("http://localhost:8081/usuarioapijpa",
                     HttpMethod.POST,
                     new HttpEntity<>(usuario),
                     new ParameterizedTypeReference<Result>() {
@@ -506,7 +506,7 @@ public class UsuarioController {
 
                     RestTemplate restTemplate = new RestTemplate();
 
-                    ResponseEntity<Result> responseEntity = restTemplate.exchange("http://localhost:8081/usuarioapi/" + usuario.getIdUsuario(),
+                    ResponseEntity<Result> responseEntity = restTemplate.exchange("http://localhost:8081/usuarioapijpa/" + usuario.getIdUsuario(),
                             HttpMethod.PUT,
                             new HttpEntity<>(usuario),
                             new ParameterizedTypeReference<Result>() {
@@ -536,7 +536,7 @@ public class UsuarioController {
                 headers.setContentType(MediaType.APPLICATION_JSON);
                 HttpEntity<Usuario> entity = new HttpEntity<>(usuario, headers);
 
-                ResponseEntity<Result<Usuario>> responseEntity = restTemplate.exchange("http://localhost:8081/direccionapi",
+                ResponseEntity<Result<Usuario>> responseEntity = restTemplate.exchange("http://localhost:8081/direccionapijpa",
                         HttpMethod.POST,
                         entity,
                         new ParameterizedTypeReference<Result<Usuario>>() {
@@ -562,7 +562,7 @@ public class UsuarioController {
 
                 RestTemplate restTemplate = new RestTemplate();
 
-                ResponseEntity<Result> responseEntity = restTemplate.exchange("http://localhost:8081/direccionapi/" + usuario.Direcciones.get(0).getIdDireccion(),
+                ResponseEntity<Result> responseEntity = restTemplate.exchange("http://localhost:8081/direccionapijpa/" + usuario.Direcciones.get(0).getIdDireccion(),
                         HttpMethod.PUT,
                         new HttpEntity<>(usuario),
                         new ParameterizedTypeReference<Result>() {
@@ -633,7 +633,7 @@ public class UsuarioController {
 
         RestTemplate restTemplate = new RestTemplate();
 
-        ResponseEntity<Result> responseEntity = restTemplate.exchange("http://localhost:8081/usuarioapi/" + idUsuario,
+        ResponseEntity<Result> responseEntity = restTemplate.exchange("http://localhost:8081/usuarioapijpa/" + idUsuario,
                 HttpMethod.DELETE,
                 HttpEntity.EMPTY,
                 new ParameterizedTypeReference<Result>() {
