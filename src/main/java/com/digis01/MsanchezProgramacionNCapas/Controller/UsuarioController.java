@@ -55,6 +55,7 @@ import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+import org.springframework.web.util.UriComponentsBuilder;
 
 @Controller
 @RequestMapping("usuario")
@@ -95,34 +96,53 @@ public class UsuarioController {
     @PostMapping
     public String Index(@ModelAttribute("usuarioBusqueda") Usuario usuarioBusqueda,
             Model model) {
-        
-        String nombre = usuarioBusqueda.getNombre();
-        
-        
-        
+
         RestTemplate restTemplate = new RestTemplate();
         
-        ResponseEntity<Result<List<Usuario>>> responseEntity = restTemplate.exchange("http://localhost:8081/usuarioapi?" +  "nombre=" + URLEncoder.encode(nombre, StandardCharsets.UTF_8),
-                HttpMethod.GET,
-                HttpEntity.EMPTY,
-                new ParameterizedTypeReference<Result<List<Usuario>>>() {
-        });
+        // Construimos la URL con filtros si existen
+    UriComponentsBuilder builder = UriComponentsBuilder
+            .fromHttpUrl("http://localhost:8081/usuarioapijpa");
 
-        if (responseEntity.getStatusCode() == HttpStatusCode.valueOf(200)) {
-            model.addAttribute("usuarioBusqueda", new Usuario());
+    if (usuarioBusqueda.getNombre() != null && !usuarioBusqueda.getNombre().isEmpty()) {
+        builder.queryParam("nombre", usuarioBusqueda.getNombre());
+    }
 
-            Result result = responseEntity.getBody();
+    if (usuarioBusqueda.getApellidoPaterno() != null && !usuarioBusqueda.getApellidoPaterno().isEmpty()) {
+        builder.queryParam("apellidoPaterno", usuarioBusqueda.getApellidoPaterno());
+    }
 
-            if (result.correct) {
-                model.addAttribute("usuarios", result.object);
-                //model.addAttribute("roles", rolJPADAOImplementation.GetAll().objects);
-            } else {
-                model.addAttribute("usuarios", null);
-            }
+    if (usuarioBusqueda.getApellidoMaterno() != null && !usuarioBusqueda.getApellidoMaterno().isEmpty()) {
+        builder.queryParam("apellidoMaterno", usuarioBusqueda.getApellidoMaterno());
+    }
+    
+//    if (usuarioBusqueda.Rol != null && usuarioBusqueda.Rol.getIdRol() != 0) {
+//        builder.queryParam("idRol", usuarioBusqueda.Rol.getIdRol());
+//    }
 
+    String urlConParametros = builder.toUriString();
+
+    // Hacemos la llamada GET con ResponseEntity
+    ResponseEntity<Result<List<Usuario>>> responseEntity = restTemplate.exchange(
+            urlConParametros,
+            HttpMethod.GET,
+            null, // GET no tiene body
+            new ParameterizedTypeReference<Result<List<Usuario>>>() {});
+
+    // Procesamos la respuesta
+    if (responseEntity.getStatusCode().is2xxSuccessful()) {
+        Result result = responseEntity.getBody();
+
+        if (result.correct) {
+            model.addAttribute("usuarios", result.object);
+        } else {
+            model.addAttribute("usuarios", null);
         }
+    } else {
+        model.addAttribute("usuarios", null);
+    }
 
-        return "UsuarioIndex"; //Retornamos hacia la vista UsuarioIndex.html
+    model.addAttribute("usuarioBusqueda", usuarioBusqueda); // para mantener los filtros llenos en la vista
+    return "UsuarioIndex";
         
         
     }
@@ -154,7 +174,7 @@ public class UsuarioController {
             RestTemplate restTemplate = new RestTemplate();
 
             //Rol
-            ResponseEntity<Result<List<Rol>>> responseEntity = restTemplate.exchange("http://localhost:8081/rolapi",
+            ResponseEntity<Result<List<Rol>>> responseEntity = restTemplate.exchange("http://localhost:8081/rolapijpa",
                     HttpMethod.GET,
                     HttpEntity.EMPTY,
                     new ParameterizedTypeReference<Result<List<Rol>>>() {
@@ -165,7 +185,7 @@ public class UsuarioController {
                 Result result = responseEntity.getBody();
 
                 //Pais
-                ResponseEntity<Result<List<Pais>>> responseEntityPais = restTemplate.exchange("http://localhost:8081/paisapi",
+                ResponseEntity<Result<List<Pais>>> responseEntityPais = restTemplate.exchange("http://localhost:8081/paisapijpa",
                         HttpMethod.GET,
                         HttpEntity.EMPTY,
                         new ParameterizedTypeReference<Result<List<Pais>>>() {
@@ -246,7 +266,7 @@ public class UsuarioController {
                 Result result = responseEntity.getBody();
 
                 //Rol
-                ResponseEntity<Result<List<Rol>>> responseEntityRol = restTemplate.exchange("http://localhost:8081/rolapi",
+                ResponseEntity<Result<List<Rol>>> responseEntityRol = restTemplate.exchange("http://localhost:8081/rolapijpa",
                         HttpMethod.GET,
                         HttpEntity.EMPTY,
                         new ParameterizedTypeReference<Result<List<Rol>>>() {
@@ -278,7 +298,7 @@ public class UsuarioController {
             RestTemplate restTemplate = new RestTemplate();
 
             //Pais
-            ResponseEntity<Result<List<Pais>>> responseEntityPais = restTemplate.exchange("http://localhost:8081/paisapi",
+            ResponseEntity<Result<List<Pais>>> responseEntityPais = restTemplate.exchange("http://localhost:8081/paisapijpa",
                     HttpMethod.GET,
                     HttpEntity.EMPTY,
                     new ParameterizedTypeReference<Result<List<Pais>>>() {
@@ -329,7 +349,7 @@ public class UsuarioController {
                 Result result = responseEntity.getBody();
 
                 //Pais
-                ResponseEntity<Result<List<Pais>>> responseEntityPais = restTemplate.exchange("http://localhost:8081/paisapi",
+                ResponseEntity<Result<List<Pais>>> responseEntityPais = restTemplate.exchange("http://localhost:8081/paisapijpa",
                         HttpMethod.GET,
                         HttpEntity.EMPTY,
                         new ParameterizedTypeReference<Result<List<Pais>>>() {
@@ -351,7 +371,7 @@ public class UsuarioController {
                     usuarioEstado.Direcciones.add(direccionEstado);
 
                     //Estado
-                    ResponseEntity<Result<List<Estado>>> responseEntityEstado = restTemplate.exchange("http://localhost:8081/estadoapi/Pais/" + usuarioEstado.Direcciones.get(0).Colonia.Municipio.Estado.Pais.getIdPais(),
+                    ResponseEntity<Result<List<Estado>>> responseEntityEstado = restTemplate.exchange("http://localhost:8081/estadoapijpa/Pais/" + usuarioEstado.Direcciones.get(0).Colonia.Municipio.Estado.Pais.getIdPais(),
                             HttpMethod.GET,
                             HttpEntity.EMPTY,
                             new ParameterizedTypeReference<Result<List<Estado>>>() {
@@ -364,7 +384,7 @@ public class UsuarioController {
                         Result resultEstado = responseEntityEstado.getBody();
 
                         //Municipio
-                        ResponseEntity<Result<List<Municipio>>> responseEntityMunicipio = restTemplate.exchange("http://localhost:8081/municipioapi/Estado/" + usuarioEstado.Direcciones.get(0).Colonia.Municipio.Estado.getIdEstado(),
+                        ResponseEntity<Result<List<Municipio>>> responseEntityMunicipio = restTemplate.exchange("http://localhost:8081/municipioapijpa/Estado/" + usuarioEstado.Direcciones.get(0).Colonia.Municipio.Estado.getIdEstado(),
                                 HttpMethod.GET,
                                 HttpEntity.EMPTY,
                                 new ParameterizedTypeReference<Result<List<Municipio>>>() {
@@ -377,7 +397,7 @@ public class UsuarioController {
                             Result resultMunicipio = responseEntityMunicipio.getBody();
 
                             //Colonia
-                            ResponseEntity<Result<List<Colonia>>> responseEntityColonia = restTemplate.exchange("http://localhost:8081/coloniaapi/Municipio/" + usuarioEstado.Direcciones.get(0).Colonia.Municipio.getIdMunicipio(),
+                            ResponseEntity<Result<List<Colonia>>> responseEntityColonia = restTemplate.exchange("http://localhost:8081/coloniaapijpa/Municipio/" + usuarioEstado.Direcciones.get(0).Colonia.Municipio.getIdMunicipio(),
                                     HttpMethod.GET,
                                     HttpEntity.EMPTY,
                                     new ParameterizedTypeReference<Result<List<Colonia>>>() {
@@ -607,7 +627,7 @@ public class UsuarioController {
 
         RestTemplate restTemplate = new RestTemplate();
 
-        ResponseEntity<Result> responseEntity = restTemplate.exchange("http://localhost:8081/direccionapi/" + idDireccion,
+        ResponseEntity<Result> responseEntity = restTemplate.exchange("http://localhost:8081/direccionapijpa/" + idDireccion,
                 HttpMethod.DELETE,
                 HttpEntity.EMPTY,
                 new ParameterizedTypeReference<Result>() {
@@ -625,7 +645,7 @@ public class UsuarioController {
         return "redirect:/usuario";
     }
 
-    //Proceso de eliminado de usuario
+    //Proceso de eliminado de direccion
     @GetMapping("/EliminarUsuario/{IdUsuario}")
     public String EliminarUsuario(Model model,
             @PathVariable("IdUsuario") int idUsuario

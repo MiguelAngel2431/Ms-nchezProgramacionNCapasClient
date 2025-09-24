@@ -474,7 +474,7 @@
             $("#selectPais").change(function() {
             $.ajax({
             type: "GET",
-            url: "http://localhost:8081/estadoapi/Pais/" + $("#selectPais").val(),
+            url: "http://localhost:8081/estadoapijpa/Pais/" + $("#selectPais").val(),
             dataType: 'json',
             success: function(data, textStatus, jqXHR) {
             if (data.correct) {
@@ -499,7 +499,7 @@
              console.log($("#selectEstado").val())
             $.ajax({
             type: "GET",
-            url: "http://localhost:8081/municipioapi/Estado/" + $("#selectEstado").val(),
+            url: "http://localhost:8081/municipioapijpa/Estado/" + $("#selectEstado").val(),
             dataType: 'json',
             success: function(data, textStatus, jqXHR) {
             if (data.correct) {
@@ -524,7 +524,7 @@
 
             $.ajax({
             type: "GET",
-            url: "http://localhost:8081/coloniaapi/Municipio/" + $("#selectMunicipio").val(),
+            url: "http://localhost:8081/coloniaapijpa/Municipio/" + $("#selectMunicipio").val(),
             dataType: 'json',
             success: function(data, textStatus, jqXHR) {
             if (data.correct) {
