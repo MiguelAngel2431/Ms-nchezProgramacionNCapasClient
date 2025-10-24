@@ -4,12 +4,16 @@
       layout:decorate="~{layout}">
     <head>
     <head>
-        <title>Registro</title>
+        <title>Sign Up</title>
 
         <style>
+            
+            body {
+                background-color: black;
+            }
 
             .container {
-                background-color: white;
+                background-color: #474747;
                 margin-top: 50px;
                 margin-bottom: 50px;
                 border: 1px solid black;
@@ -35,6 +39,7 @@
                 font-family: "Bebas Neue", sans-serif;
                 font-size: 50px;
                 font-style: normal;
+                color: white;
             }
 
             .subtitle {
@@ -42,6 +47,7 @@
                 font-family: "Bebas Neue", sans-serif;
                 font-size: 40px;
                 font-style: normal;
+                color: white;
             }
 
             label {
@@ -49,6 +55,7 @@
                 font-optical-sizing: auto;
                 font-style: normal;
                 font-weight: bold;
+                color: white;
             }
 
             .form-group {
@@ -118,7 +125,7 @@
     </head>
     <body layout:fragment="body">
         <div class="container">
-            <form method="post" id="form" th:object="${Usuario}" th:action="@{/usuario/add}" enctype="multipart/form-data">
+            <form method="post" id="form" th:object="${Usuario}" th:action="@{/usuario/register}" enctype="multipart/form-data">
                 <!--<form method="post" th:object="${Usuario}" th:action="@{/usuario/add}">-->
 
 
@@ -126,7 +133,7 @@
                 <!-- Titulo para Registrar usuario -->
                 <div th:if="*{IdUsuario == 0}">
                     <div th:if="*{Direcciones[0].IdDireccion}  == 0">
-                        <center><h1 class="title">Registro</h1></center>
+                        <center><h1 class="title">Sign Up</h1></center>
                     </div>
                 </div>
 
@@ -253,7 +260,8 @@
                                 <label for="usr">Rol:</label>                   <!-- Rol.IdRol-->
                                 <select class="form-control" id="sel1" th:field="*{Rol.IdRol}">
                                     <option value="0">Selecciona Rol</option>
-                                    <option th:each="rol : ${roles}" 
+                                    <option th:each="rol : ${roles}"
+                                            th:if="${rol.Nombre != 'Administrador'}"
                                             th:text="${rol.Nombre}" 
                                             th:value="${rol.IdRol}">One
                                     </option>

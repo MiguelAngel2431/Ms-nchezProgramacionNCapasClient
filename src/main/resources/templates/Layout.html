@@ -27,6 +27,7 @@
     </head>
 
     <header>
+        <script>console.log("Hola");</script>
         <!--<nav class="navbar navbar-expand-lg navbar-dark bg-dark">
             <a class="navbar-brand" href="#">Navbar</a>
             <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
@@ -49,7 +50,7 @@
                 </ul>
             </div>
         </nav>-->
-
+        <span th:if="${session.jwt != null}">
         <nav class="navbar navbar-expand-sm bg-dark navbar-dark fixed-top">
             <div class="container-fluid">
                 <a class="navbar-brand" href="#">
@@ -64,9 +65,11 @@
                         <li class="nav-item active">
                             <a class="nav-link" href="/usuario">Usuarios</a>
                         </li>
+                        <span th:if="${session.rol == 'Administrador'}">
                         <li class="nav-item">
                             <a class="nav-link" href="/usuario/cargamasiva">Carga masiva</a>
                         </li>
+                        </span>
                         <li class="nav-item">
                             <a class="nav-link" href="#">Pricing</a>
                         </li>
@@ -79,15 +82,31 @@
                             </ul>
                         </li>
                     </ul>
+                    <!-- Botón de logout alineado a la derecha -->
+                    <ul class="navbar-nav ms-auto">
+                        <li class="nav-item">
+                            <span class="badge bg-secondary" th:if="${session.username != null}">Hola <span th:text="${session.username}"></span>!
+                                <form th:action="@{/logout}" method="post" class="d-inline">
+                                    <button type="submit" class="btn btn-link nav-link" style="padding: 0; border: none;">LogOut&nbsp;<i class="bi bi-box-arrow-right"></i></button>
+                                </form>
+                            </span>
+                            <span class="badge bg-secondary" th:unless="${session.username != null}">
+                                Hola visitante
+                            </span>
+                        </li>
+                    </ul>
                 </div>
             </div>
         </nav>
+        </span>
         <br>
         <br>
     </header>
 
     <body layout:fragment="body">
         <div>TODO write content</div>
+        
+        
     </body>
 
     <footer class="bg-body-tertiary text-center">

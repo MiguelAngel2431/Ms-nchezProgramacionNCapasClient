@@ -63,27 +63,66 @@ public class UsuarioController {
 
     //Metodo para retornar todos los usarios a la vista
     @GetMapping
-    public String Index(Model model) {
+    public String Index(Model model, HttpSession session, @ModelAttribute("usuarioBusqueda") Usuario usuarioBusqueda) {
         //Result result = usuarioDAOImplementation.GetAll(new Usuario("", "", "", 0));
+
+        String token = (String) session.getAttribute("jwt");
+        String rol = (String) session.getAttribute("rol");
+        String userName = (String) session.getAttribute("username");
+
+        if (token == null || token.isEmpty()) {
+            return "Login";
+        }
 
         RestTemplate restTemplate = new RestTemplate();
 
-        ResponseEntity<Result<List<Usuario>>> responseEntity = restTemplate.exchange("http://localhost:8081/usuarioapijpa",
-                HttpMethod.GET,
-                HttpEntity.EMPTY,
-                new ParameterizedTypeReference<Result<List<Usuario>>>() {
-        });
+        HttpHeaders headers = new HttpHeaders();
+        headers.set("Authorization", "Bearer " + token); // Asegúrate de tener el token guardado en sesión
 
-        if (responseEntity.getStatusCode() == HttpStatusCode.valueOf(200)) {
-            model.addAttribute("usuarioBusqueda", new Usuario());
+        HttpEntity<Void> entity = new HttpEntity<>(headers);
+        System.out.println("EL ROL ES: " + rol);
+        if ("Administrador".equals(rol)) {
 
-            Result result = responseEntity.getBody();
+            ResponseEntity<Result<List<Usuario>>> responseEntity = restTemplate.exchange("http://localhost:8081/usuarioapijpa",
+                    HttpMethod.GET,
+                    entity,
+                    new ParameterizedTypeReference<Result<List<Usuario>>>() {
+            });
 
-            if (result.correct) {
-                model.addAttribute("usuarios", result.object);
-                //model.addAttribute("roles", rolJPADAOImplementation.GetAll().objects);
-            } else {
-                model.addAttribute("usuarios", null);
+            if (responseEntity.getStatusCode() == HttpStatusCode.valueOf(200)) {
+                model.addAttribute("usuarioBusqueda", new Usuario());
+
+                Result result = responseEntity.getBody();
+
+                if (result.correct) {
+                    model.addAttribute("usuarios", result.object);
+                    //model.addAttribute("roles", rolJPADAOImplementation.GetAll().objects);
+                } else {
+                    model.addAttribute("usuarios", null);
+                }
+
+            }
+
+        } else {
+
+            ResponseEntity<Result<Usuario>> responseEntity = restTemplate.exchange("http://localhost:8081/usuarioapijpa/nombreUsuario/" + userName,
+                    HttpMethod.GET, entity,
+                    new ParameterizedTypeReference<Result<Usuario>>() {
+
+            });
+
+            if (responseEntity.getStatusCode() == HttpStatusCode.valueOf(200)) {
+                model.addAttribute("usuarioBusqueda", new Usuario());
+
+                Result result = responseEntity.getBody();
+
+                if (result.correct) {
+                    model.addAttribute("usuarios", result.object);
+                    //model.addAttribute("roles", rolJPADAOImplementation.GetAll().objects);
+                } else {
+                    model.addAttribute("usuarios", null);
+                }
+
             }
 
         }
@@ -95,56 +134,69 @@ public class UsuarioController {
     //Buscador
     @PostMapping
     public String Index(@ModelAttribute("usuarioBusqueda") Usuario usuarioBusqueda,
-            Model model) {
+            Model model,
+            HttpSession session) {
+
+        String token = (String) session.getAttribute("jwt");
+        String rol = (String) session.getAttribute("rol");
+        String userName = (String) session.getAttribute("username");
+
+        if (token == null) {
+            return "Login";
+        }
 
         RestTemplate restTemplate = new RestTemplate();
-        
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.set("Authorization", "Bearer " + token);
+
+        HttpEntity<Void> entity = new HttpEntity<>(headers);
+
         // Construimos la URL con filtros si existen
-    UriComponentsBuilder builder = UriComponentsBuilder
-            .fromHttpUrl("http://localhost:8081/usuarioapijpa");
+        UriComponentsBuilder builder = UriComponentsBuilder
+                .fromHttpUrl("http://localhost:8081/usuarioapijpa");
 
-    if (usuarioBusqueda.getNombre() != null && !usuarioBusqueda.getNombre().isEmpty()) {
-        builder.queryParam("nombre", usuarioBusqueda.getNombre());
-    }
+        if (usuarioBusqueda.getNombre() != null && !usuarioBusqueda.getNombre().isEmpty()) {
+            builder.queryParam("nombre", usuarioBusqueda.getNombre());
+        }
 
-    if (usuarioBusqueda.getApellidoPaterno() != null && !usuarioBusqueda.getApellidoPaterno().isEmpty()) {
-        builder.queryParam("apellidoPaterno", usuarioBusqueda.getApellidoPaterno());
-    }
+        if (usuarioBusqueda.getApellidoPaterno() != null && !usuarioBusqueda.getApellidoPaterno().isEmpty()) {
+            builder.queryParam("apellidoPaterno", usuarioBusqueda.getApellidoPaterno());
+        }
 
-    if (usuarioBusqueda.getApellidoMaterno() != null && !usuarioBusqueda.getApellidoMaterno().isEmpty()) {
-        builder.queryParam("apellidoMaterno", usuarioBusqueda.getApellidoMaterno());
-    }
-    
+        if (usuarioBusqueda.getApellidoMaterno() != null && !usuarioBusqueda.getApellidoMaterno().isEmpty()) {
+            builder.queryParam("apellidoMaterno", usuarioBusqueda.getApellidoMaterno());
+        }
+
 //    if (usuarioBusqueda.Rol != null && usuarioBusqueda.Rol.getIdRol() != 0) {
 //        builder.queryParam("idRol", usuarioBusqueda.Rol.getIdRol());
 //    }
+        String urlConParametros = builder.toUriString();
 
-    String urlConParametros = builder.toUriString();
+        // Hacemos la llamada GET con ResponseEntity
+        ResponseEntity<Result<List<Usuario>>> responseEntity = restTemplate.exchange(
+                urlConParametros,
+                HttpMethod.GET,
+                entity,
+                new ParameterizedTypeReference<Result<List<Usuario>>>() {
+        });
 
-    // Hacemos la llamada GET con ResponseEntity
-    ResponseEntity<Result<List<Usuario>>> responseEntity = restTemplate.exchange(
-            urlConParametros,
-            HttpMethod.GET,
-            null, // GET no tiene body
-            new ParameterizedTypeReference<Result<List<Usuario>>>() {});
+        // Procesamos la respuesta
+        if (responseEntity.getStatusCode().is2xxSuccessful()) {
+            Result result = responseEntity.getBody();
 
-    // Procesamos la respuesta
-    if (responseEntity.getStatusCode().is2xxSuccessful()) {
-        Result result = responseEntity.getBody();
-
-        if (result.correct) {
-            model.addAttribute("usuarios", result.object);
+            if (result.correct) {
+                model.addAttribute("usuarios", result.object);
+            } else {
+                model.addAttribute("usuarios", null);
+            }
         } else {
             model.addAttribute("usuarios", null);
         }
-    } else {
-        model.addAttribute("usuarios", null);
-    }
 
-    model.addAttribute("usuarioBusqueda", usuarioBusqueda); // para mantener los filtros llenos en la vista
-    return "UsuarioIndex";
-        
-        
+        model.addAttribute("usuarioBusqueda", usuarioBusqueda); // para mantener los filtros llenos en la vista
+        return "UsuarioIndex";
+
     }
 
     //Buscador
@@ -165,10 +217,8 @@ public class UsuarioController {
 //
 //    }
 //   
-    //Manda al fomulario (para agregar un usuario) o a la vista de usuario details
-    @GetMapping("/action/{IdUsuario}")
-    public String Add(Model model, @PathVariable("IdUsuario") int idUsuario) {
-
+    @GetMapping("/signUp/{IdUsuario}")
+    public String SignUp(Model model, @PathVariable("IdUsuario") int idUsuario) {
         if (idUsuario == 0) { //Manda al formulario completo (en blanco)
 
             RestTemplate restTemplate = new RestTemplate();
@@ -210,15 +260,88 @@ public class UsuarioController {
                 }
             }
 
+        }
+        return "SignupForm";
+    }
+
+    //Manda al fomulario (para agregar un usuario) o a la vista de usuario details
+    @GetMapping("/action/{IdUsuario}")
+    public String Add(Model model, @PathVariable("IdUsuario") int idUsuario, HttpSession session) {
+
+        String token = (String) session.getAttribute("jwt");
+        String rol = (String) session.getAttribute("rol");
+
+        if (token == null || token.isEmpty()) {
+            return "Login";
+        }
+
+//        if (!"Administrador".equals(rol)) {
+//            return "Prohibicion";
+//        }
+        if (idUsuario == 0) { //Manda al formulario completo (en blanco)
+
+            if (!"Administrador".equals(rol)) {
+                return "Prohibicion";
+            }
+
+            RestTemplate restTemplate = new RestTemplate();
+
+            HttpHeaders headers = new HttpHeaders();
+            headers.set("Authorization", "Bearer " + token); // Asegúrate de tener el token guardado en sesión
+
+            HttpEntity<Void> entity = new HttpEntity<>(headers);
+
+            //Rol
+            ResponseEntity<Result<List<Rol>>> responseEntity = restTemplate.exchange("http://localhost:8081/rolapijpa",
+                    HttpMethod.GET,
+                    entity,
+                    new ParameterizedTypeReference<Result<List<Rol>>>() {
+            });
+
+            if (responseEntity.getStatusCode() == HttpStatusCode.valueOf(200)) {
+                model.addAttribute("rol", new Rol());
+                Result result = responseEntity.getBody();
+
+                //Pais
+                ResponseEntity<Result<List<Pais>>> responseEntityPais = restTemplate.exchange("http://localhost:8081/paisapijpa",
+                        HttpMethod.GET,
+                        entity,
+                        new ParameterizedTypeReference<Result<List<Pais>>>() {
+                });
+
+                if (responseEntityPais.getStatusCode() == HttpStatusCode.valueOf(200)) {
+
+                    model.addAttribute("pais", new Pais());
+
+                    Result resultPais = responseEntityPais.getBody();
+
+                    Usuario usuario = new Usuario();
+                    usuario.Direcciones = new ArrayList<>();
+                    usuario.Direcciones.add(new Direccion());
+                    model.addAttribute("roles", result.object);
+                    model.addAttribute("paises", resultPais.object);
+                    model.addAttribute("Usuario", usuario);
+
+                    //Poner por default un radiobutton seleccionado
+                    usuario.setSexo("M ");
+
+                }
+            }
+
             return "UsuarioForm";
 
         } else { //Manda a la vista del detalle del Usuario
             //Result result = usuarioDAOImplementation.GetDetail(idUsuario);
             RestTemplate restTemplate = new RestTemplate();
 
+            HttpHeaders headers = new HttpHeaders();
+            headers.set("Authorization", "Bearer " + token); // Asegúrate de tener el token guardado en sesión
+
+            HttpEntity<Void> entity = new HttpEntity<>(headers);
+
             ResponseEntity<Result<Usuario>> responseEntity = restTemplate.exchange("http://localhost:8081/usuarioapijpa/details/" + idUsuario,
                     HttpMethod.GET,
-                    HttpEntity.EMPTY,
+                    entity,
                     new ParameterizedTypeReference<Result<Usuario>>() {
             });
 
@@ -244,7 +367,23 @@ public class UsuarioController {
     public String formEditable(
             @RequestParam int IdUsuario,
             @RequestParam(required = false) Integer IdDireccion,
-            Model model) {
+            Model model,
+            HttpSession session) {
+
+        String token = (String) session.getAttribute("jwt");
+        String rol = (String) session.getAttribute("rol");
+
+        if (token == null || token.isEmpty()) {
+            return "Login";
+        }
+
+//        if (!"Administrador".equals(rol)) {
+//            return "Prohibicion";
+//        }
+        HttpHeaders headers = new HttpHeaders();
+        headers.set("Authorization", "Bearer " + token); // Asegúrate de tener el token guardado en sesión
+
+        HttpEntity<Void> entity = new HttpEntity<>(headers);
 
         /**
          * ***************************** EDITAR USUARIO
@@ -256,7 +395,7 @@ public class UsuarioController {
 
             ResponseEntity<Result<Usuario>> responseEntity = restTemplate.exchange("http://localhost:8081/usuarioapijpa/" + IdUsuario,
                     HttpMethod.GET,
-                    HttpEntity.EMPTY,
+                    entity,
                     new ParameterizedTypeReference<Result<Usuario>>() {
             });
 
@@ -268,7 +407,7 @@ public class UsuarioController {
                 //Rol
                 ResponseEntity<Result<List<Rol>>> responseEntityRol = restTemplate.exchange("http://localhost:8081/rolapijpa",
                         HttpMethod.GET,
-                        HttpEntity.EMPTY,
+                        entity,
                         new ParameterizedTypeReference<Result<List<Rol>>>() {
                 });
 
@@ -300,7 +439,7 @@ public class UsuarioController {
             //Pais
             ResponseEntity<Result<List<Pais>>> responseEntityPais = restTemplate.exchange("http://localhost:8081/paisapijpa",
                     HttpMethod.GET,
-                    HttpEntity.EMPTY,
+                    entity,
                     new ParameterizedTypeReference<Result<List<Pais>>>() {
             });
 
@@ -338,7 +477,7 @@ public class UsuarioController {
             //Direccion
             ResponseEntity<Result<Direccion>> responseEntity = restTemplate.exchange("http://localhost:8081/direccionapijpa/" + IdDireccion,
                     HttpMethod.GET,
-                    HttpEntity.EMPTY,
+                    entity,
                     new ParameterizedTypeReference<Result<Direccion>>() {
             });
 
@@ -351,7 +490,7 @@ public class UsuarioController {
                 //Pais
                 ResponseEntity<Result<List<Pais>>> responseEntityPais = restTemplate.exchange("http://localhost:8081/paisapijpa",
                         HttpMethod.GET,
-                        HttpEntity.EMPTY,
+                        entity,
                         new ParameterizedTypeReference<Result<List<Pais>>>() {
                 });
 
@@ -373,7 +512,7 @@ public class UsuarioController {
                     //Estado
                     ResponseEntity<Result<List<Estado>>> responseEntityEstado = restTemplate.exchange("http://localhost:8081/estadoapijpa/Pais/" + usuarioEstado.Direcciones.get(0).Colonia.Municipio.Estado.Pais.getIdPais(),
                             HttpMethod.GET,
-                            HttpEntity.EMPTY,
+                            entity,
                             new ParameterizedTypeReference<Result<List<Estado>>>() {
                     });
 
@@ -386,7 +525,7 @@ public class UsuarioController {
                         //Municipio
                         ResponseEntity<Result<List<Municipio>>> responseEntityMunicipio = restTemplate.exchange("http://localhost:8081/municipioapijpa/Estado/" + usuarioEstado.Direcciones.get(0).Colonia.Municipio.Estado.getIdEstado(),
                                 HttpMethod.GET,
-                                HttpEntity.EMPTY,
+                                entity,
                                 new ParameterizedTypeReference<Result<List<Municipio>>>() {
                         });
 
@@ -399,7 +538,7 @@ public class UsuarioController {
                             //Colonia
                             ResponseEntity<Result<List<Colonia>>> responseEntityColonia = restTemplate.exchange("http://localhost:8081/coloniaapijpa/Municipio/" + usuarioEstado.Direcciones.get(0).Colonia.Municipio.getIdMunicipio(),
                                     HttpMethod.GET,
-                                    HttpEntity.EMPTY,
+                                    entity,
                                     new ParameterizedTypeReference<Result<List<Colonia>>>() {
                             });
 
@@ -439,13 +578,13 @@ public class UsuarioController {
 
     }
 
-    //Proceso de agregado (POST)
-    @PostMapping("add")
-    public String Add(
+    @PostMapping("register")
+    public String Register(
             @ModelAttribute("Usuario") Usuario usuario,
             BindingResult bindingResult,
             Model model,
-            @RequestParam(name = "imagenFile", required = false) MultipartFile imagen) {
+            @RequestParam(name = "imagenFile", required = false) MultipartFile imagen,
+            HttpSession session) {
 
         /**
          * ***************************** AGREGAR USUARIO
@@ -455,9 +594,94 @@ public class UsuarioController {
 
             RestTemplate restTemplate = new RestTemplate();
 
-            ResponseEntity<Result> responseEntity = restTemplate.exchange("http://localhost:8081/usuarioapijpa",
+            ResponseEntity<Result> responseEntity = restTemplate.exchange("http://localhost:8081/loginapijpa",
                     HttpMethod.POST,
                     new HttpEntity<>(usuario),
+                    new ParameterizedTypeReference<Result>() {
+            });
+
+            if (responseEntity.getStatusCode() == HttpStatusCode.valueOf(200)) {
+                model.addAttribute("usuario", new Usuario());
+
+                Result result = responseEntity.getBody();
+
+                //Si bindingResult tiene errores...
+                if (bindingResult.hasErrors()) {
+                    model.addAttribute("Usuario", usuario);
+
+                    return "UsuarioForm";
+
+                } else {
+
+                    //Imagen
+                    if (imagen != null && imagen.getOriginalFilename() != null) {
+                        String nombre = imagen.getOriginalFilename();
+                        //archivo.jpg
+                        //[archivo,jpg]
+                        String extension = nombre.split("\\.")[1];
+                        if (extension.equals("jpg")) {
+                            try {
+                                byte[] bytes = imagen.getBytes();
+                                String base64Image = Base64.getEncoder().encodeToString(bytes);
+                                usuario.setImagen(base64Image);
+                            } catch (Exception ex) {
+                                System.out.println("Error");
+                            }
+
+                        }
+                    }
+
+                    //Autoinferencia
+                    //Result result = usuarioDAOImplementation.Add(usuario);
+                    //Result result = usuarioJPADAOImplementation.Add(usuario);
+                }
+
+                if (result.correct) {
+                    model.addAttribute("mensajeExito", "Registro exitoso, ahora puedes loguearte!");
+                } else {
+                    model.addAttribute("mensajeError", "Hubo un error");
+                }
+            }
+        }
+        return "Login";
+    }
+
+    //Proceso de agregado (POST)
+    @PostMapping("add")
+    public String Add(
+            @ModelAttribute("Usuario") Usuario usuario,
+            BindingResult bindingResult,
+            Model model,
+            @RequestParam(name = "imagenFile", required = false) MultipartFile imagen,
+            HttpSession session) {
+
+        String token = (String) session.getAttribute("jwt");
+        String rol = (String) session.getAttribute("rol");
+
+        if (token == null || token.isEmpty()) {
+            return "Login";
+        }
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.set("Authorization", "Bearer " + token); // Asegúrate de tener el token guardado en sesión
+
+        HttpEntity<Usuario> entity = new HttpEntity<>(usuario, headers);
+
+        /**
+         * ***************************** AGREGAR USUARIO
+         * ****************************************
+         */
+        if (usuario.getIdUsuario() == 0) { //Agregar usuario
+
+            if (!"Administrador".equals(rol)) {
+                return "Prohibicion";
+            }
+
+            RestTemplate restTemplate = new RestTemplate();
+
+            ResponseEntity<Result> responseEntity = restTemplate.exchange("http://localhost:8081/usuarioapijpa",
+                    HttpMethod.POST,
+                    entity,
                     new ParameterizedTypeReference<Result>() {
             });
 
@@ -528,7 +752,7 @@ public class UsuarioController {
 
                     ResponseEntity<Result> responseEntity = restTemplate.exchange("http://localhost:8081/usuarioapijpa/" + usuario.getIdUsuario(),
                             HttpMethod.PUT,
-                            new HttpEntity<>(usuario),
+                            entity,
                             new ParameterizedTypeReference<Result>() {
                     });
 
@@ -552,10 +776,9 @@ public class UsuarioController {
 
                 RestTemplate restTemplate = new RestTemplate();
 
-                HttpHeaders headers = new HttpHeaders();
-                headers.setContentType(MediaType.APPLICATION_JSON);
-                HttpEntity<Usuario> entity = new HttpEntity<>(usuario, headers);
-
+//                HttpHeaders headers = new HttpHeaders();
+//                headers.setContentType(MediaType.APPLICATION_JSON);
+//                HttpEntity<Usuario> entity = new HttpEntity<>(usuario, headers);
                 ResponseEntity<Result<Usuario>> responseEntity = restTemplate.exchange("http://localhost:8081/direccionapijpa",
                         HttpMethod.POST,
                         entity,
@@ -584,7 +807,7 @@ public class UsuarioController {
 
                 ResponseEntity<Result> responseEntity = restTemplate.exchange("http://localhost:8081/direccionapijpa/" + usuario.Direcciones.get(0).getIdDireccion(),
                         HttpMethod.PUT,
-                        new HttpEntity<>(usuario),
+                        entity,
                         new ParameterizedTypeReference<Result>() {
                 });
 
@@ -623,13 +846,25 @@ public class UsuarioController {
     @GetMapping("/delete/{IdDireccion}")
     public String Delete(Model model,
             @PathVariable("IdDireccion") int idDireccion,
-            @ModelAttribute("Usuario") Usuario usuario) {
+            @ModelAttribute("Usuario") Usuario usuario,
+            HttpSession session) {
+
+        String token = (String) session.getAttribute("jwt");
+
+        if (token == null || token.isEmpty()) {
+            return "Login";
+        }
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.set("Authorization", "Bearer " + token); // Asegúrate de tener el token guardado en sesión
+
+        HttpEntity<Void> entity = new HttpEntity<>(headers);
 
         RestTemplate restTemplate = new RestTemplate();
 
         ResponseEntity<Result> responseEntity = restTemplate.exchange("http://localhost:8081/direccionapijpa/" + idDireccion,
                 HttpMethod.DELETE,
-                HttpEntity.EMPTY,
+                entity,
                 new ParameterizedTypeReference<Result>() {
         });
 
@@ -645,17 +880,29 @@ public class UsuarioController {
         return "redirect:/usuario";
     }
 
-    //Proceso de eliminado de direccion
+    //Proceso de eliminado de usuario
     @GetMapping("/EliminarUsuario/{IdUsuario}")
     public String EliminarUsuario(Model model,
-            @PathVariable("IdUsuario") int idUsuario
+            @PathVariable("IdUsuario") int idUsuario,
+            HttpSession session
     ) {
+
+        String token = (String) session.getAttribute("jwt");
+
+        if (token == null || token.isEmpty()) {
+            return "Login";
+        }
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.set("Authorization", "Bearer " + token); // Asegúrate de tener el token guardado en sesión
+
+        HttpEntity<Void> entity = new HttpEntity<>(headers);
 
         RestTemplate restTemplate = new RestTemplate();
 
         ResponseEntity<Result> responseEntity = restTemplate.exchange("http://localhost:8081/usuarioapijpa/" + idUsuario,
                 HttpMethod.DELETE,
-                HttpEntity.EMPTY,
+                entity,
                 new ParameterizedTypeReference<Result>() {
         });
 
@@ -669,6 +916,46 @@ public class UsuarioController {
         }
 
         return "redirect:/usuario";
+    }
+
+    @GetMapping("/GetByUserName/{UserName}")
+    public String ObtenerPorUserName(Model model,
+            @PathVariable String UserName,
+            HttpSession session) {
+
+        String token = (String) session.getAttribute("jwt");
+
+        if (token == null || token.isEmpty()) {
+            return "Login";
+        }
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.set("Authorization", "Bearer " + token); // Asegúrate de tener el token guardado en sesión
+
+        HttpEntity<Void> entity = new HttpEntity<>(headers);
+
+        RestTemplate restTemplate = new RestTemplate();
+
+        ResponseEntity<Result<Usuario>> responseEntity = restTemplate.exchange("http://localhost:8081/usuarioapijpa/nombreUsuario/" + UserName,
+                HttpMethod.GET, entity,
+                new ParameterizedTypeReference<Result<Usuario>>() {
+
+        });
+
+        if (responseEntity.getStatusCode() == HttpStatusCode.valueOf(200)) {
+            model.addAttribute("Usuario", new Usuario());
+
+            Result result = responseEntity.getBody();
+
+            if (result.correct) {
+                model.addAttribute("usuarios", result.object);
+            } else {
+                model.addAttribute("usuarios", null);
+            }
+
+        }
+
+        return "UsuarioIndex";
     }
 
     /*
@@ -747,7 +1034,19 @@ public class UsuarioController {
      */
     //Mostrar la vista de Carga masiva
     @GetMapping("cargamasiva")
-    public String CargaMasiva() {
+    public String CargaMasiva(HttpSession session) {
+
+        String token = (String) session.getAttribute("jwt");
+        String rol = (String) session.getAttribute("rol");
+
+        if (token == null) {
+            return "Login";
+        }
+
+        if (!"Administrador".equals(rol)) {
+            return "Prohibicion";
+        }
+
         return "CargaMasiva";
     }
 
@@ -857,6 +1156,8 @@ public class UsuarioController {
 
         //return "CargaMasiva";
     }
+    
+    
 //    @PostMapping("cargamasiva")
 //    public String CargaMasiva(@RequestParam("archivo") MultipartFile file, Model model, HttpSession session) {
 //

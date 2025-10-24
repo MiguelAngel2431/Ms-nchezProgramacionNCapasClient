@@ -1,5 +1,6 @@
 <html xmlns:th="http://www.thymeleaf.org"
       xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
       layout:decorate="~{layout}">
     <head>
         <title>Usuarios</title>
@@ -8,23 +9,23 @@
 
 
         <style>
-/*            body {
-                background-image: url("https://images.pexels.com/photos/305821/pexels-photo-305821.jpeg");
-                background-repeat: no-repeat;
-                background-size: cover;
-                background-attachment: fixed;
-                
-            }*/
+            /*            body {
+                            background-image: url("https://images.pexels.com/photos/305821/pexels-photo-305821.jpeg");
+                            background-repeat: no-repeat;
+                            background-size: cover;
+                            background-attachment: fixed;
+                            
+                        }*/
             .btn-util {
                 width: 40px;
                 height: 40px;
                 border-radius: 50%
             }
-            
+
             .edit-user {
                 border-radius: 50% 50% 0 0;
             }
-            
+
             .delete-user {
                 border-radius: 0 0 50% 50%;
             }
@@ -143,12 +144,12 @@
                 font-size: 20px;
 
             }
-            
+
             td {
                 text-align: center; /* Centra horizontalmente */
                 vertical-align: middle; /* Centra verticalmente */
             }
-            
+
             .table-responsive {
                 box-shadow: 0 0 20px 0 grey;
             }
@@ -217,6 +218,7 @@
         <div class="container">
 
             <!-- The Modal -->
+            <span th:if="${session.rol == 'Administrador'}">
             <div class="modal fade" id="myModal">
                 <div class="modal-dialog">
                     <div class="modal-content">
@@ -273,11 +275,16 @@
                     </div>
                 </div>
             </div>
+            </span>
 
             <!-- Boton Agregar usuario -->
             <br>
-            <a class="btn btn-success btn-add-user" th:href="@{/usuario/action/{idUsuario}(idUsuario = 0)}">Registrar usuario <i class="bi bi-person-add"></i></a>
 
+            <span th:if="${session.rol == 'Administrador'}">
+                <a class="btn btn-success btn-add-user" th:href="@{/usuario/action/{idUsuario}(idUsuario = 0)}">Registrar usuario <i class="bi bi-person-add"></i></a>
+            </span>
+            <!--            <p sec:authorize="isAuthenticated()">Hola, usuario logueado</p>
+                        <p sec:authorize="isAnonymous()">Hola, visitante</p>-->
 
             <br>
             <center><h1 class="title">Usuarios</h1></center>
@@ -303,11 +310,14 @@
                 </a>
             </div>
 
+            <span th:if="${session.rol == 'Administrador'}">
             <div class="lbl-busqueda">
                 Busqueda
             </div>
+            </span>
 
             <!-- Banner busqueda personalizada -->
+            <span th:if="${session.rol == 'Administrador'}">
             <form class="form-busqueda" method="post" th:action="@{/usuario}" th:object="${usuarioBusqueda}">
                 <div class="row">
                     <div class="form-group col-lg-3 col-md-2 col-3">
@@ -342,16 +352,21 @@
                     </div>
                 </div>
             </form>
+            </span>
 
             <br>
-            
+
             <!-- Tabla de usuarios -->
             <div class="table-responsive">
                 <table class="table table-hover table-bordered">
                     <thead class="table-dark">
                         <tr>
+                            <!--<span th:if="${session.rol == 'Administrador'}">-->
                             <th>#</th>
+                            <span th:if="${session.rol == 'Administrador'}">
                             <th>Status</th>
+                            </span>
+                            <!--</span>-->
                             <th>Imagen</th>
                             <th>Nombre</th>
                             <th>Direccion</th>
@@ -361,20 +376,26 @@
                     <tbody id="tableBody">
                         <tr th:each="usuario : ${usuarios}">
                             <!-- Util -->
+                            <!--<span th:if="${session.rol == 'Administrador'}">-->
                             <td>
                                 <!-- Editar ususario -->
                                 <a th:href="@{/usuario/action/{idUsuario}(idUsuario = ${usuario.IdUsuario})}" class="btn btn-warning btn-util edit-user"><i class="bi bi-pencil-square"></i></a>
                                 <!-- Eliminar usuario -->
+                                <span th:if="${session.rol == 'Administrador'}">
                                 <a th:href="@{/usuario/EliminarUsuario/{idUsuario}(idUsuario = ${usuario.IdUsuario})}" class="btn btn-danger btn-util delete-user"><i class="bi bi-trash3-fill"></i></a>
+                                </span>
                             </td>
-                            
+
                             <!-- Baja logica -->
+                            <span th:if="${session.rol == 'Administrador'}">
                             <td>
                                 <div class="form-check form-switch">
                                     <input class="form-check-input" type="checkbox" id="switch-bajalogica" role="switch" th:attr="data-id=${usuario.IdUsuario}" onchange="bajaLogica(this)" th:checked="${usuario.Status}">
-                                    
+
                                 </div>
                             </td>
+                            </span>
+                            <!--</span>-->
 
                             <!-- Imagen -->
                             <td>                                                                                                                            <!-- https://img.freepik.com/vector-premium/icono-circulo-usuario-anonimo-ilustracion-vector-estilo-plano-sombra_520826-1931.jpg -->
@@ -400,7 +421,7 @@
 
                             <!-- Contacto -->
                             <td>
-                                
+
                                 <ul>
                                     <ol><p th:text="|Correo: ${usuario.Email}|"></p></ol>
                                     <ol><p th:text="|Telefono: ${usuario.Telefono}|"></p></ol>
@@ -415,6 +436,10 @@
                 </table>
             </div>
         </div>
+        <script th:inline="javascript">
+            const token = /*[['Bearer ' + ${session.jwt}]]*/ '';
+            console.log("JWT token desde la sesión:", token);
+        </script>
 
         <script>
             // Referencia al campo de búsqueda y al cuerpo de la tabla
@@ -423,52 +448,56 @@
 
             // Evento para filtrar la tabla
             searchInput.addEventListener('keyup', function () {
-            const filter = searchInput.value.toLowerCase(); // Texto ingresado en minúsculas
-            const rows = tableBody.getElementsByTagName('tr'); // Todas las filas de la tabla
+                const filter = searchInput.value.toLowerCase(); // Texto ingresado en minúsculas
+                const rows = tableBody.getElementsByTagName('tr'); // Todas las filas de la tabla
 
-            for (let row of rows) {
-            const cells = row.getElementsByTagName('td'); // Todas las celdas de la fila
-            let match = false;
+                for (let row of rows) {
+                    const cells = row.getElementsByTagName('td'); // Todas las celdas de la fila
+                    let match = false;
 
-            // Verificar si alguna celda contiene el texto buscado
-            for (let cell of cells) {
-            if (cell.textContent.toLowerCase().includes(filter)) {
-            match = true;
-            break;
-            }
-            }
+                    // Verificar si alguna celda contiene el texto buscado
+                    for (let cell of cells) {
+                        if (cell.textContent.toLowerCase().includes(filter)) {
+                            match = true;
+                            break;
+                        }
+                    }
 
-            // Mostrar u ocultar la fila según si coincide
-            row.style.display = match ? '' : 'none';
-            }
+                    // Mostrar u ocultar la fila según si coincide
+                    row.style.display = match ? '' : 'none';
+                }
             });
         </script>
-        
+
         <!-- Funcion Ajax para baja logica -->
         <script>
             function bajaLogica(element) {
                 let idUsuario = $(element).data("id");
-                
+
                 console.log(idUsuario);
                 let datos = {
-                    idUsuario: idUsuario,     
-                    activo: false      
+                    idUsuario: idUsuario,
+                    activo: false
                 };
-                
+
                 element.disabled = true;
-                
+
                 $.ajax({
                     url: "http://localhost:8081/usuarioapijpa/bajaLogica/" + idUsuario,
                     type: "PUT",
+                    headers: {
+                        "Authorization": token
+                    },
                     contentType: "application/json",
                     data: JSON.stringify(datos),
-                    success: function() {
-                       
+                    success: function () {
+
                         element.disabled = false;
-                        
+
                     },
-                    error: function(message) {
-                        console.log(message)
+                    error: function (message) {
+                        console.log(message);
+                        alert("Algo salio mal");
                     }
                 });
             }
@@ -476,9 +505,9 @@
 
         <script>
             document.getElementById("switch-bajalogica").addEventListener("click",
-                debounce(function() {
-                    console.log("no tan rapido");
-                }, 3000));
+                    debounce(function () {
+                        console.log("no tan rapido");
+                    }, 3000));
         </script>
 
     </body>

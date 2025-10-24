@@ -253,10 +253,7 @@
                                 <label for="usr">Rol:</label>                   <!-- Rol.IdRol-->
                                 <select class="form-control" id="sel1" th:field="*{Rol.IdRol}">
                                     <option value="0">Selecciona Rol</option>
-                                    <option th:each="rol : ${roles}" 
-                                            th:text="${rol.Nombre}" 
-                                            th:value="${rol.IdRol}">One
-                                    </option>
+                                    <option th:each="rol : ${roles}" th:text="${rol.Nombre}" th:value="${rol.IdRol}">One</option>
                                 </select>
                             </div>
 
